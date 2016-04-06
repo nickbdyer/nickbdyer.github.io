@@ -1,0 +1,43 @@
+---
+layout: post
+title:  "Uno"
+---
+
+Day One.
+
+Mostly admin today, but importantly I had the chance to sit down with my
+mentors. Uku and Mateo will be guiding me through the next 6 months. 
+
+I had my first Zagaku today, led by Cedric who was talking about Design
+Patterns, specifically three:
+
+- Adapter Pattern - Useful for abiding by OCP, especially when you cannot
+  change an interface but need to behave differently.
+- Decorator Pattern - The example here was coffee orders, the decorator pattern
+  was used for ordering coffee with specific requirements, each time a new
+  drink component was added, the decorator pattern was used, so "soy milk" was
+  added through a decorator pattern. Further investigation needed on this one,
+  I'm not sure what the benefit is here in using this pattern. 
+- Facade Pattern - I understand an API to be the best example of this pattern.
+  And interface to allow others access to low level parts of your system, but
+  still giving you control over what they can do with it. 
+
+I had a great chat with Uku and Mateo about my approach to the apprenticeship
+and the challenges that I will face given the way I work. My first obstacle is
+of my own making, and it is related to how like to make sure things are
+"perfect". The proportion of my time spent "perfecting" things over just
+getting them working, is likely to be a hinderence to my ability to try things.
+This is probably why I've never started to code any of my "ideas", I get to
+wrapped up in the planning stage trying to get it perfect and make sure I get
+it right first time, that I never actually build anything. So the current
+tactic, at least with the blog initially is to engineer it so that it's not
+feasible to perfect every post, what is more important is getting used to
+writing, so I will be doing a post every day until further notice. 
+
+The longer term lessons then will be:
+
+Don't try and make it perfect. Make it work, make it clean, then move on. 
+
+Don't try and plan it to perfection from the start, just start building, and go
+from there. This will also require me to get comfortable with me deleting my
+own code...

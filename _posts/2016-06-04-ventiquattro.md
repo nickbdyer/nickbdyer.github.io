@@ -22,6 +22,20 @@ Now your task is rather easy to declare (a bit less to perform): you have to
 build a function to return the total occurrences of all the increasing or
 decreasing numbers below 10 raised to the xth power (x will always be >= 0).
 
+To give you a starting point, there are a grand total of increasing and
+decreasing numbers as shown in the table:
+
+| Total	| Below |
+| ------------- |
+| 1	    | 1 |
+| 10	  | 10 |
+| 100	  | 100 |
+| 475	  | 1000 |
+| 1675	| 10000 |
+| 4954	| 100000 |
+| 12952	| 1000000 |
+
+<br>
 Tips: efficiency and trying to figure out how it works are essential: with
 a brute force approach, some tests with larger numbers may take more than the
 total computing power currently on Earth to be finished in the short allotted

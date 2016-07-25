@@ -31,34 +31,39 @@ many you can't relate in some part to
 is my perhaps naive, but just workable tactic for dealing with the unsolvable
 problem.
 
-### 1. Be the immovable solver!
+##### 1. Be the immovable solver!
   Quite simply, don't give up. These problems will come back, and there is only
   so many times you can put off solving them. If you can, relish the
   opportunity to take on the challenge, a smooth sea never made a skilled
   sailor after all! 
-### 2. Take a step back
+
+##### 2. Take a step back
   This is not intended to directly conflict with my first point. The skill here
   is the ability to take a step back and say "Am I trying to solve the right
   problem?", "Is what I am trying to do the best way to tackle the problem?".
   Sometimes you will see that actually, you haven't taken the best step
   forward, and you can `git stash`, and write a new test to progress down
   a better route.
-### 3. Google it!
+
+##### 3. Google it!
   If you hadn't thought of this yourself, then you really are too stupid to be
   a programmer. Go home and get some rest.
-### 4. Read around the problem
+
+##### 4. Read around the problem
   Consciously a different solution to number three. This is less about looking
   for the quick fix code example or tutorial from stackoverflow. This is about
   reading the documentation, given, a slightly more daunting prospect but who
   better to guide you through a problem than the person that has created the
   problem!
-### 5. Look at the source code
+
+##### 5. Look at the source code
   Reading source code has always seemed like a scary idea to me. "Why should
   I look at that? I can't even understand the documentation, why would the
   source code help?". And yet, on numerous occasions the source code has
   provided the answer in the most succinct way possible. The more you go
   through this process, the easier it will become.
-### 6. Ask for help
+
+##### 6. Ask for help
   Gretchen Rubin writes in her bestselling book The Happiness Project that
   one of her "Secrets to Adulthood" is asking for help. Somewhere between being
   at school and being at work, asking for help becomes harder. It shouldn't

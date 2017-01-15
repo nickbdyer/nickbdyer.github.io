@@ -15,4 +15,3 @@ under the craftsman at 8th Light, it was too good an opportunity to turn down!
 
 Outside of work, I do CrossFit for a regular workout, and also enjoy
 photography whenever the opportunity arises.
-

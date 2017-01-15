@@ -4,8 +4,6 @@ title: About
 permalink: /about/
 ---
 
-A little about me:
-
 I studied Music and Sound Recording at University, which led me to a career in
 Audio Visual Automation for 5 years. During that time, I had some exposure to
 programming, enough to eventually take a leap and leave my job for a short intensive

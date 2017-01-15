@@ -6,9 +6,9 @@
 # 'jekyll serve'. If you change this file, please restart the server process.
 
 # Site settings
-title: Nick's Apprenticeship Blog
+title: Nick's Blog
 description: > # this means to ignore newlines until "baseurl:"
-  A record of the lessons I learn on my apprenticeship. 
+  A record of things I want to remember.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://www.nickbdyer.uk" # the base hostname & protocol for your site
 twitter_username: nickbdyer

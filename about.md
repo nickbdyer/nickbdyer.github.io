@@ -11,5 +11,7 @@ course with Makers Academy. The course led me to a job as a consultant
 developer. I enjoyed my time, but when I heard I had an offer to study
 under the craftsman at 8th Light, it was too good an opportunity to turn down!
 
-Outside of work, I do CrossFit for a regular workout, and also enjoy
-photography whenever the opportunity arises.
+<p class="message">
+  Outside of work, I do CrossFit for a regular workout, and also enjoy
+  photography whenever the opportunity arises.
+</p>

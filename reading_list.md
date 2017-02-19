@@ -1,5 +1,8 @@
-# Read
-
+---
+layout: page
+title: Reading List
+permalink: /reading-list/
+---
 
 Breen Peter, SOFTWARE CRAFTSMANSHIP????
 

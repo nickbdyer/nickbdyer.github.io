@@ -1,30 +1,17 @@
-# Welcome to Jekyll!
-#
-# This config file is meant for settings that affect your whole blog, values
-# which you are expected to set up once and rarely need to edit after that.
-# For technical reasons, this file is *NOT* reloaded automatically when you use
-# 'jekyll serve'. If you change this file, please restart the server process.
+title:               Nick's Blog
+description:         'A record of things I want to remember.'
+url:                 http://www.nickbdyer.uk
+baseurl:             ''
+paginate:            5
 
-# Site settings
-title: Nick's Blog
-description: > # this means to ignore newlines until "baseurl:"
-  A record of things I want to remember.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://www.nickbdyer.uk" # the base hostname & protocol for your site
-twitter_username: nickbdyer
-github_username:  nickbdyer
+author:
+  name:              Nick Dyer
+  url:               https://twitter.com/nickbdyer
+  email:             ndyer@8thlight.com
 
-# Build settings
-markdown: kramdown
-kramdown:
-  input: GFM
-  hard_wrap: false
+gems:                [jekyll-paginate]
+permalink:           pretty
 
-  defaults:
-    -
-  scope:
-    path: ""
-    type: "posts"
-  values:
-    layout: "post"
-    author: "Nick Dyer"
+github:              'http://www.github.com/nickbdyer'
+twitter:             'http://www.twitter.com/nickbdyer'
+

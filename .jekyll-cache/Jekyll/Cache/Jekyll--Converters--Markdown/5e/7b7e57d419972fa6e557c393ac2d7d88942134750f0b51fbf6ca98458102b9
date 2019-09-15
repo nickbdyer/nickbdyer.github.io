@@ -1,0 +1,78 @@
+I"� <h1 id="dependency-injection-and-dependency-injection">Dependency Injection and Dependency Injection</h1>
+
+<p>The Play Framework implements the Guice Dependency Injection framework. Getting
+started with it has been a daunting process, one littered with errors. However,
+after a 3 weeks of using it now, I am starting to develop an understanding for
+its features.</p>
+
+<p>One of the interesting takeaways was the intricacies surrounding the Guice
+Framework, which initially were not obvious to me. I think my initial
+confusion was around the <code class="highlighter-rouge">@Inject</code> tag. The first instance of needing to use
+the tag was confusingly during the writing of a test. The confusion in this
+case came because I still needed to pass in the item I wanted to inject.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Inject</span>
+<span class="kd">public</span> <span class="nf">CSVRepository</span><span class="o">(</span><span class="nc">Environment</span> <span class="n">env</span><span class="o">,</span> <span class="nc">String</span> <span class="n">apprenticeCSV</span><span class="o">,</span> <span class="nc">String</span> <span class="n">restaurantCSV</span><span class="o">,</span> <span class="nc">String</span> <span class="n">scheduleCSV</span><span class="o">,</span> <span class="nc">String</span> <span class="n">employeesCSV</span><span class="o">,</span> <span class="nc">String</span> <span class="n">guestsCSV</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">apprenticeCSV</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="na">getFile</span><span class="o">(</span><span class="n">apprenticeCSV</span><span class="o">).</span><span class="na">getAbsolutePath</span><span class="o">();</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">scheduleCSV</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="na">getFile</span><span class="o">(</span><span class="n">scheduleCSV</span><span class="o">).</span><span class="na">getAbsolutePath</span><span class="o">();</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">restaurantCSV</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="na">getFile</span><span class="o">(</span><span class="n">restaurantCSV</span><span class="o">).</span><span class="na">getAbsolutePath</span><span class="o">();</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">employeesCSV</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="na">getFile</span><span class="o">(</span><span class="n">employeesCSV</span><span class="o">).</span><span class="na">getAbsolutePath</span><span class="o">();</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">guestsCSV</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="na">getFile</span><span class="o">(</span><span class="n">guestsCSV</span><span class="o">).</span><span class="na">getAbsolutePath</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The constructor for our CSVRepository needed the Environment to be passed in,
+so that we could access the files used for storage. Without the inject tag in
+place, the tests would blow up. Despite an environment being passed in to the
+constructor.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nc">Storage</span> <span class="n">storage</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CSVRepository</span><span class="o">(</span><span class="nc">Environment</span><span class="o">.</span><span class="na">simple</span><span class="o">(),</span> <span class="s">"test/resources/apprentices.csv"</span><span class="o">,</span> <span class="s">"test/resources/restaurants.csv"</span><span class="o">,</span> <span class="s">"test/resources/schedule.csv"</span><span class="o">,</span> <span class="s">"test/resources/employees.csv"</span><span class="o">,</span> <span class="s">"test/resources/guests.csv"</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>What is not clear from the guice error message, is that the failure is not
+really linked to the test, but to running the application in production. It is
+essentially a compilation error that is raised. So, the <code class="highlighter-rouge">@Inject</code> annotation
+really says is “find the <code class="highlighter-rouge">Environment.class</code> and inject an instance of it
+here”. The Guice/Play Framework pre-defines how some of the key classes should
+be instantiated for injection, they are annotated as such within the the
+framework source code.</p>
+
+<p>Given that understand, it then become a question of how when injecting things
+into our controller, we should inform the framework what to use. It turns out
+there are a number of ways to do it. The key concept is that of a binding, and
+also providers. The Play Framework has a special configuration location within
+module files that extend the <code class="highlighter-rouge">AbstractModule</code>.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Module</span> <span class="kd">extends</span> <span class="nc">AbstractModule</span><span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">configure</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">bind</span><span class="o">(</span><span class="nc">Storage</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">to</span><span class="o">(</span><span class="nc">PostgresRepository</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Provides</span>
+    <span class="nc">CSVRepository</span> <span class="nf">provideCSVRepository</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">CSVRepository</span> <span class="n">csv</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">CSVRepository</span><span class="o">(</span><span class="nc">Environment</span><span class="o">.</span><span class="na">simple</span><span class="o">(),</span> <span class="s">"conf/resources/apprentices.csv"</span><span class="o">,</span> <span class="s">"conf/resources/restaurants.csv"</span><span class="o">,</span> <span class="s">"conf/resources/schedule.csv"</span><span class="o">,</span> <span class="s">"conf/resources/employees.csv"</span><span class="o">,</span> <span class="s">"conf/resources/guests.csv"</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">csv</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In the case shown above the <code class="highlighter-rouge">@Provides</code> signifies that this method should be
+implemented should a <code class="highlighter-rouge">CSVRepository</code> ever need to be injected. It knows this
+via the return type of the method.</p>
+
+<p>The binding above that says that wherever <code class="highlighter-rouge">Storage.class</code> is listed to be
+injected, then a <code class="highlighter-rouge">PostgresRepository</code> should be injected in it’s place.</p>
+
+<p>With those concepts in place, that covers the basic features of the Guice
+Injection framework. What these features lead to is what guice calls
+a dependency injection graph. So as one main item is injected, all the
+sub-classes and their sub-classes are individually instantiated and injected.</p>
+
+<p>The benefits of using a framework like this are quite clean, and concise code.
+The alternatives to these injections are lots of factory methods which
+explicitly instantiate classes. Whilst the factory pattern is commonly used and
+understood, it is also another source of bugs and requires maintenance.</p>
+
+:ET

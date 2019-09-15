@@ -1,0 +1,62 @@
+I"�<p>Keeping the Test Suite Fast.</p>
+
+<p>My TicTacToe now has an options for a computer vs computer player. One of the
+requests from my mentors was that it be a worthwhile choice. I.e. it doesn’t
+just rattle through the gameplay on the command line so that all you end up
+seeing is the final board state.</p>
+
+<p>In order to make the game “watchable” I added a delay to the computer players
+move algorithm. However, in doing so, it also added the delay to the test
+suite. And since the test suite forces a computer player to play through the
+entire game loop, it increases the test duration by approximately 1000%.</p>
+
+<p>There are I think there are a number of options here to solve the problem,
+either I pass a flag into the method itself to determine if the delay is used
+or not, or I use an external environment variable to essentially do the same
+thing, but a little bit cleaner. Alternatively without flags I can pass in the
+delay in milliseconds. I think this is a nice option, and having checked with
+Christoph there is a way to go one step further, a new Class!</p>
+
+<h5 id="current-situation">Current Situation</h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="kt">int</span> <span class="nf">generateMove</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">availableMoves</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">Collections</span><span class="o">.</span><span class="na">shuffle</span><span class="o">(</span><span class="n">availableMoves</span><span class="o">);</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">1000</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">interrupt</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="k">return</span> <span class="n">availableMoves</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h5 id="new-delayed-computer-player">New Delayed Computer Player</h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DelayedComputer</span> <span class="kd">extends</span> <span class="nc">DumbComputer</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">delay</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">DelayedComputer</span><span class="o">(</span><span class="nc">Mark</span> <span class="n">mark</span><span class="o">,</span> <span class="kt">int</span> <span class="n">delay</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">mark</span><span class="o">);</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">delay</span> <span class="o">=</span> <span class="n">delay</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">choosePosition</span><span class="o">(</span><span class="nc">UserInterface</span> <span class="n">ui</span><span class="o">,</span> <span class="nc">Board</span> <span class="n">board</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">delay</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">interrupt</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kd">super</span><span class="o">.</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">ui</span><span class="o">,</span> <span class="n">board</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>I can now test the functionality of this delayed computer player easily, and it
+doesn’t affect the DumbComputer class at all. Feasibly this could be extended
+to add a delay to the PerfectComputer also, but I will save that until it is
+implemented fully.</p>
+
+:ET

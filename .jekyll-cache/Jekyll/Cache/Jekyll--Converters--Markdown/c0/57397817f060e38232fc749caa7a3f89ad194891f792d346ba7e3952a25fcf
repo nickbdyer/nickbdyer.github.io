@@ -1,0 +1,185 @@
+I"�)<p>When can we consider the code we write “good enough”? For some, a passing build
+is good enough. For others perhaps it’s a passing <a href="https://en.wikipedia.org/wiki/Acceptance_testing">acceptance
+suite</a>. Maybe it’s the
+existence of unit tests that define completion, with a specific code coverage
+percentage. These options are all quantifiable, which makes them simple targets
+to aspire to. We can go further than that and push for something less tangible
+but more worthwhile.  All apprentices at 8th Light undertake a project called
+the HTTP Server. It’s no small undertaking, and consequently brings up numerous
+occasions to question whether the code you have written is “good enough”.</p>
+
+<h3 id="aim-for-configuration"><strong>Aim for configuration</strong></h3>
+
+<p>Development of the server is guided by pre-written
+<a href="http://www.fitnesse.org/">Fitnesse</a> acceptance tests.  These tests provide
+realistic user scenarios that try to persuade the apprentice’s server to comply
+with the HTTP/1.1 specification. My use of the word “persuade” is deliberate,
+since the tests can only check that the final result is correct, not how the
+result is produced. For example:</p>
+
+<blockquote>
+  <p>“When I navigate to <code class="highlighter-rouge">/redirect</code>, I should be redirected to the homepage”.</p>
+</blockquote>
+
+<p>This will test that the appropriate HTTP status code is returned in the
+response, and that the response header includes a “Location” field.  We have
+options here, we could hard-code a response inside an if statement:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span> <span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getPath</span><span class="o">()</span> <span class="o">==</span> <span class="s">"/redirect"</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nf">Response</span><span class="o">(</span><span class="mi">302</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>This approach could push us towards a long if/else chain, which is a recipe for
+violation of the SOLID principles. If we want to change this behaviour we would
+need to reopen our server to modify it, violating the Open Closed Principle.
+This also implies violation of the Single Responsibility Principle, because our
+server class is now responsible for at least routing of requests and
+constructing responses.</p>
+
+<p>Not only do we violate some principles here, but we also tie our server to the
+requirements of our acceptance suite. This may be obvious to some readers, but
+our preference should be to produce a generic server “component” that is not
+tied to one specific use case.</p>
+
+<p>It can be difficult to see where the divide between a generic component and the
+specific use case should lie. When we’re struggling to find that perfect split,
+one of the best sources of inspiration is - as with many things - similar
+projects.  In this case, open source servers show us where a user is expected
+to start configuration. In producing my server, I looked at some familiar
+servers like Sinatra and Express. These are both well established projects with
+great documentation that explains in great detail “how to configure the server
+to your requirements”.</p>
+
+<p><a href="http://www.sinatrarb.com/">Sinatra</a>, a Domain Specific Language for quickly
+creating web applications in Ruby, gives an example for getting started:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># myapp.rb</span>
+<span class="nb">require</span> <span class="s1">'sinatra'</span>
+
+<span class="n">get</span> <span class="s1">'/'</span> <span class="k">do</span>
+  <span class="s1">'Hello world!'</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The documentation explains that “routes” are an http method pair with
+a URL-matching pattern, each route being associated with a block of code. The
+routes are matched in the order they are defined, and the first match is
+invoked. The documentation goes on to explain how static files can be handled,
+views can be rendered and various other more complex items.</p>
+
+<p><a href="https://expressjs.com/">Express.js</a> is uncannily similar:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">express</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">();</span>
+
+<span class="nx">app</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hello World!</span><span class="dl">'</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>We can ignore the rest of the documentation for now, as the code snippets
+we have already tell us a lot. They suggest that users will want to configure
+the responses to requests through methods/functions. This seems to be a common
+pattern for defining this sort of behaviour (it’s very similar in Phoenix, Play
+and Spark).</p>
+
+<p>Defining routing behaviour through methods/functions helps us find a good
+point to create this split, but we are not in the clear yet. The server needs
+to do more than just routing. The acceptance tests list some of these
+additional behaviours. Again, we need to decide what should and shouldn’t be
+configurable.</p>
+
+<p>We are in a fortunate position where all the requirements of our server are
+available upfront through the acceptance tests. Interpreting the implications
+of those requirements correctly can be hard, but it becomes easier as more
+features are delivered. We should worry about making the perfect architectural
+decision up front, that is rarely possible. As with many things in programming,
+the best approach is to follow the Scout Rule:</p>
+
+<blockquote>
+  <p>“Always leave the campsite cleaner than you found it.”</p>
+</blockquote>
+
+<p>This ranges from refactoring to a better abstraction or giving something
+a better name.</p>
+
+<h3 id="naming-for-the-domain"><strong>Naming for the domain</strong></h3>
+
+<p>Naming is widely regarded as one of the hardest things about programming.
+Even outside of programming it is hard, so much so some people choose to <a href="http://www.bbc.co.uk/newsbeat/article/37255033/a-16-year-old-british-girl-earns-48000-helping-chinese-people-name-their-babies">outsource
+it</a>.</p>
+
+<p>It would be reasonable to think that naming in the domain of HTTP and web
+servers is easy. After all people have using web servers for over 25 years, so
+the names used should be pretty familiar. Consider for example the following
+question:</p>
+
+<p>What word should we use to describe <code class="highlighter-rouge">/users</code> in the request line <code class="highlighter-rouge">GET /users HTTP/1.1</code>?</p>
+
+<p>Here’s five options that could be suitable:</p>
+
+<ul>
+  <li>Path</li>
+  <li>Route</li>
+  <li>Action</li>
+  <li>URI</li>
+  <li>Resource</li>
+</ul>
+
+<p>They are all appropriate, some more so than others. “Action” has connotations
+with just about everything, and is only commonly used in HTML forms. “URI”
+might only be valid when it is specifically formatted.</p>
+
+<p>As with structure, open source projects can also offer an insight on naming.
+Server creation has been solved many times, consequently so has naming that is
+unambiguous and specific. Without the community, how can we improve our naming?
+What can we do to check that names we assign are “good enough”?</p>
+
+<p>Perhaps we can ask ourselves some questions about them:</p>
+
+<ol>
+  <li>Is the name accurate. Does it represent the object, or describe the behaviour
+well?</li>
+  <li>If something changed in the function or object, would the name be forced
+to change?</li>
+  <li>Is there a more domain appropriate name for the same thing?</li>
+  <li>Long names are harder to read, can we shorten the name?</li>
+  <li>Does anything else have
+a similar name, if we refactor, will we need to change the name based on its
+new use?</li>
+  <li>For injected objects, does the object name match its parameter name
+in the function? If not, what does this tell us about the name?</li>
+</ol>
+
+<p>This list is not exhaustive, but forms a basis for continued improvement. The
+more questions we ask of our names, the more robust they become.</p>
+
+<h3 id="reflect"><strong>Reflect</strong></h3>
+
+<p>Let’s assume that ground zero for our code is a passing build, exhaustive unit
+test coverage and appropriate acceptance tests. What can we do to move from
+here, to a position where we are comfortable calling it “good enough”?</p>
+
+<p>Truth is, I don’t know the answer, why not ask your code that question?</p>
+
+<p>Not the answer you were looking for? Let’s ask ourselves how many times we have
+moved on from a story as soon as it’s delivered. Could and should we spend more
+time analysing that work? Committing to this post-analysis prepares us for the
+tough questions, features. New features question the structure of our projects.
+They result in anything from a small code addition, a bout of refactoring or
+even a thorough redesign. Good software is flexible in change. Perfectly
+flexible software should not be the aim though, since flexibility comes
+packaged with complexity. The aim for “good enough”, is to have answers for
+your own questions before the feature asks them.</p>
+
+<p>In naming, the exam questions are other developers, maintainers. They are the
+people for whom good names are written. As with structure, our names should
+answer our own questions first, before answering theirs. As craftsmen, we take
+pride in our work and naming, but even if we don’t, we can all rest assured:</p>
+
+<blockquote>
+  <p>The person that ends up maintaining your code won’t be your violent
+psychopathic neighbour… will they?</p>
+</blockquote>
+:ET

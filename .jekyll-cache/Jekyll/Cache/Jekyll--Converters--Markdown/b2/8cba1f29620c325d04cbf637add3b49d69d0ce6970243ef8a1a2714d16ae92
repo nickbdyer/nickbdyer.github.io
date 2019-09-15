@@ -1,0 +1,137 @@
+I"�Y<h1 id="statelessness">Statelessness</h1>
+
+<p>This week, I have been pairing with Mollie on our new internal project, LunchMan™.</p>
+
+<p>In my previous iteration I had planned to get this blog post finished, since my
+work with the the Play Framework had pushed me to learn about the benefits of
+statelessness in my application. Unfortunately, that iteration was cut short
+in order to synchronise with Mollie so we could start this project together.</p>
+
+<p>No matter! As it turns out, the application we have been building together has
+already reached a stage where web state has reared its head, and so now I can
+talk about it from both perspectives.</p>
+
+<p>From the perspective of TTT, the reason for wanting to engineer statelessness
+was to allow more than one person to go to the website and play a game. In
+LunchMan the reason was opposite, rather than wanting people to be able to do
+different things, we want people to see exactly the same thing.</p>
+
+<p>One important fact I have discovered is that the Play Framework by default will
+reuse the same instance of a controller for all requests. This in part has
+caused some of the issues I have experienced recently. In Tic Tac Toe, I was
+experiencing a “bug” where on page refresh in one browser it would occasionally
+display the game state from a game running in another browser!</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">HomeController</span> <span class="kd">extends</span> <span class="nc">Controller</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">Board</span> <span class="n">board</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">Game</span> <span class="n">currentGame</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">WebInterface</span> <span class="n">ui</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WebInterface</span><span class="o">();</span>
+    <span class="kd">private</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Board</span><span class="o">&gt;</span> <span class="n">boardMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+    <span class="kd">private</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Game</span><span class="o">&gt;</span> <span class="n">gameMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+
+    <span class="kd">public</span> <span class="nc">Result</span> <span class="nf">play</span><span class="o">(</span><span class="nc">Option</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">board</span> <span class="o">=</span> <span class="n">boardMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">session</span><span class="o">(</span><span class="s">"board_id"</span><span class="o">));</span>
+        <span class="n">currentGame</span> <span class="o">=</span> <span class="n">gameMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">session</span><span class="o">(</span><span class="s">"game_id"</span><span class="o">));</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">position</span><span class="o">.</span><span class="na">isDefined</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ui</span><span class="o">.</span><span class="na">nextMoveIsValid</span><span class="o">(</span><span class="n">board</span><span class="o">,</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">getCurrentPlayer</span><span class="o">().</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">board</span><span class="o">)))</span> <span class="o">{</span>
+            <span class="n">ui</span><span class="o">.</span><span class="na">makeNextMove</span><span class="o">(</span><span class="n">currentGame</span><span class="o">,</span> <span class="n">board</span><span class="o">,</span> <span class="n">position</span><span class="o">.</span><span class="na">get</span><span class="o">());</span>
+            <span class="k">return</span> <span class="nf">ok</span><span class="o">(</span><span class="n">game</span><span class="o">.</span><span class="na">render</span><span class="o">(</span><span class="s">"Let's Play!"</span><span class="o">,</span> <span class="n">board</span><span class="o">.</span><span class="na">getCells</span><span class="o">(),</span> <span class="n">ui</span><span class="o">.</span><span class="na">endGame</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">isOver</span><span class="o">(</span><span class="n">board</span><span class="o">)));</span>
+        <span class="o">}</span>
+        <span class="n">ui</span><span class="o">.</span><span class="na">makeNextMove</span><span class="o">(</span><span class="n">currentGame</span><span class="o">,</span> <span class="n">board</span><span class="o">,</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">getCurrentPlayer</span><span class="o">().</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">board</span><span class="o">));</span>
+        <span class="k">return</span> <span class="nf">ok</span><span class="o">(</span><span class="n">game</span><span class="o">.</span><span class="na">render</span><span class="o">(</span><span class="s">"Let's Play!"</span><span class="o">,</span> <span class="n">board</span><span class="o">.</span><span class="na">getCells</span><span class="o">(),</span> <span class="n">ui</span><span class="o">.</span><span class="na">endGame</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">isOver</span><span class="o">(</span><span class="n">board</span><span class="o">)));</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p>In the example above, the play method, is called after a GET request to
+“/play”. The first two lines of the method were meant to retrieve the correct
+game from the session, process a move on the board and then display it. After
+a long time spent trying to work out the fault, I ended up sending the hashCode
+of the board to the view, so that I could see whether the board that was being
+displayed was the same board in a different state or actually the other board
+being played.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">public</span> <span class="nc">Result</span> <span class="nf">play</span><span class="o">(</span><span class="nc">Option</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">board</span> <span class="o">=</span> <span class="n">boardMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">session</span><span class="o">(</span><span class="s">"board_id"</span><span class="o">));</span>
+        <span class="n">currentGame</span> <span class="o">=</span> <span class="n">gameMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">session</span><span class="o">(</span><span class="s">"game_id"</span><span class="o">));</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">position</span><span class="o">.</span><span class="na">isDefined</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ui</span><span class="o">.</span><span class="na">nextMoveIsValid</span><span class="o">(</span><span class="n">board</span><span class="o">,</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">getCurrentPlayer</span><span class="o">().</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">board</span><span class="o">)))</span> <span class="o">{</span>
+            <span class="n">ui</span><span class="o">.</span><span class="na">makeNextMove</span><span class="o">(</span><span class="n">currentGame</span><span class="o">,</span> <span class="n">board</span><span class="o">,</span> <span class="n">position</span><span class="o">.</span><span class="na">get</span><span class="o">());</span>
+            <span class="k">return</span> <span class="nf">ok</span><span class="o">(</span><span class="n">game</span><span class="o">.</span><span class="na">render</span><span class="o">(</span><span class="s">"Let's Play!"</span><span class="o">,</span> <span class="n">board</span><span class="o">.</span><span class="na">getCells</span><span class="o">(),</span> <span class="n">ui</span><span class="o">.</span><span class="na">endGame</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">isOver</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="nc">Integer</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">board</span><span class="o">.</span><span class="na">hashCode</span><span class="o">())));</span>
+        <span class="o">}</span>
+        <span class="n">ui</span><span class="o">.</span><span class="na">makeNextMove</span><span class="o">(</span><span class="n">currentGame</span><span class="o">,</span> <span class="n">board</span><span class="o">,</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">getCurrentPlayer</span><span class="o">().</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">board</span><span class="o">));</span>
+        <span class="k">return</span> <span class="nf">ok</span><span class="o">(</span><span class="n">game</span><span class="o">.</span><span class="na">render</span><span class="o">(</span><span class="s">"Let's Play!"</span><span class="o">,</span> <span class="n">board</span><span class="o">.</span><span class="na">getCells</span><span class="o">(),</span> <span class="n">ui</span><span class="o">.</span><span class="na">endGame</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">isOver</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="nc">Integer</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">board</span><span class="o">.</span><span class="na">hashCode</span><span class="o">())));</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p>The modified method above revealed that in fact, on a page refresh with two
+games being played at the same time, occaionally the value of board that was
+used in the return methods, was different to the one being retrieved from the
+session. The culprits in the end were the fields at the top of the controller:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">HomeController</span> <span class="kd">extends</span> <span class="nc">Controller</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">WebInterface</span> <span class="n">ui</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">WebInterface</span><span class="o">();</span>
+    <span class="kd">private</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Board</span><span class="o">&gt;</span> <span class="n">boardMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+    <span class="kd">private</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Game</span><span class="o">&gt;</span> <span class="n">gameMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+
+    <span class="kd">public</span> <span class="nc">Result</span> <span class="nf">play</span><span class="o">(</span><span class="nc">Option</span><span class="o">&lt;</span><span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">position</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Board</span> <span class="n">board</span> <span class="o">=</span> <span class="n">boardMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">session</span><span class="o">(</span><span class="s">"board_id"</span><span class="o">));</span>
+        <span class="nc">Game</span> <span class="n">currentGame</span> <span class="o">=</span> <span class="n">gameMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">session</span><span class="o">(</span><span class="s">"game_id"</span><span class="o">));</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">position</span><span class="o">.</span><span class="na">isDefined</span><span class="o">()</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">ui</span><span class="o">.</span><span class="na">nextMoveIsValid</span><span class="o">(</span><span class="n">board</span><span class="o">,</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">getCurrentPlayer</span><span class="o">().</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">board</span><span class="o">)))</span> <span class="o">{</span>
+            <span class="n">ui</span><span class="o">.</span><span class="na">makeNextMove</span><span class="o">(</span><span class="n">currentGame</span><span class="o">,</span> <span class="n">board</span><span class="o">,</span> <span class="n">position</span><span class="o">.</span><span class="na">get</span><span class="o">());</span>
+            <span class="k">return</span> <span class="nf">ok</span><span class="o">(</span><span class="n">game</span><span class="o">.</span><span class="na">render</span><span class="o">(</span><span class="s">"Let's Play!"</span><span class="o">,</span> <span class="n">board</span><span class="o">.</span><span class="na">getCells</span><span class="o">(),</span> <span class="n">ui</span><span class="o">.</span><span class="na">endGame</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">isOver</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="nc">Integer</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">board</span><span class="o">.</span><span class="na">hashCode</span><span class="o">())));</span>
+        <span class="o">}</span>
+        <span class="n">ui</span><span class="o">.</span><span class="na">makeNextMove</span><span class="o">(</span><span class="n">currentGame</span><span class="o">,</span> <span class="n">board</span><span class="o">,</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">getCurrentPlayer</span><span class="o">().</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">board</span><span class="o">));</span>
+        <span class="k">return</span> <span class="nf">ok</span><span class="o">(</span><span class="n">game</span><span class="o">.</span><span class="na">render</span><span class="o">(</span><span class="s">"Let's Play!"</span><span class="o">,</span> <span class="n">board</span><span class="o">.</span><span class="na">getCells</span><span class="o">(),</span> <span class="n">ui</span><span class="o">.</span><span class="na">endGame</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="n">currentGame</span><span class="o">.</span><span class="na">isOver</span><span class="o">(</span><span class="n">board</span><span class="o">),</span> <span class="nc">Integer</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">board</span><span class="o">.</span><span class="na">hashCode</span><span class="o">())));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>By removing these variables from the controller, and keeping each controller method
+stateless, I was able to remove the bug and cleanly allow multiple people to
+play a game. The maps used to store and retrieve the session content are
+suitable to sit across the single controller instance, since it is
+a requirement that they are consistent for different users.</p>
+
+<p>Now on to LunchMan, where a similar problem was occuring, but again the
+solution was not obvious for a long time. The issue we were experiencing was
+that on page refresh the list on our homepage would double in size. And we
+spent a lot of time checking each method to see if it was responsible for the
+duplication:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">HomeController</span> <span class="kd">extends</span> <span class="nc">Controller</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">apprenticeCSV</span> <span class="o">=</span> <span class="s">"/Users/molliestephenson/Java/LunchMan/csvs/apprentices.csv"</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">scheduleCSV</span> <span class="o">=</span> <span class="s">"/Users/molliestephenson/Java/LunchMan/csvs/schedule.csv"</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">FridayLunch</span><span class="o">&gt;</span> <span class="n">schedule</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+    <span class="kd">private</span> <span class="nc">Rota</span> <span class="n">rota</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Rota</span><span class="o">(</span><span class="mi">4</span><span class="o">,</span> <span class="nc">LocalDate</span><span class="o">.</span><span class="na">now</span><span class="o">());</span>
+
+
+    <span class="kd">public</span> <span class="nc">Result</span> <span class="nf">index</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Apprentice</span><span class="o">&gt;</span> <span class="n">apprentices</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">CSVHelper</span><span class="o">.</span><span class="na">createApprenticesFromCSV</span><span class="o">(</span><span class="n">apprentices</span><span class="o">,</span> <span class="n">apprenticeCSV</span><span class="o">);</span>
+            <span class="nc">List</span><span class="o">&lt;</span><span class="nc">FridayLunch</span><span class="o">&gt;</span> <span class="n">loadedSchedule</span> <span class="o">=</span> <span class="n">createScheduleFromCSV</span><span class="o">(</span><span class="n">schedule</span><span class="o">,</span> <span class="n">scheduleCSV</span><span class="o">);</span>
+            <span class="n">rota</span><span class="o">.</span><span class="na">setSchedule</span><span class="o">(</span><span class="n">loadedSchedule</span><span class="o">);</span>
+            <span class="n">rota</span><span class="o">.</span><span class="na">updateSchedule</span><span class="o">(</span><span class="n">apprentices</span><span class="o">);</span>
+            <span class="nc">CSVHelper</span><span class="o">.</span><span class="na">saveRotaToCSV</span><span class="o">(</span><span class="n">rota</span><span class="o">.</span><span class="na">getSchedule</span><span class="o">(),</span> <span class="n">scheduleCSV</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">ex</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="nf">ok</span><span class="o">(</span><span class="n">index</span><span class="o">.</span><span class="na">render</span><span class="o">(</span><span class="s">"LunchMan"</span><span class="o">,</span> <span class="n">rota</span><span class="o">.</span><span class="na">getSchedule</span><span class="o">()));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>All the methods in the <code class="highlighter-rouge">try</code> statement, had the potential to be responsible for
+the duplication in the list. However, it was the private field <code class="highlighter-rouge">schedule</code> that
+was the ultimate cause of the problem. Since it’s state was being maintained,
+when it was passed into <code class="highlighter-rouge">createScheduleFromCSV</code> it was simply appended to,
+rather than written from fresh. Again, the fact that the HomeController is only
+instantiated once is relevant to this problem.</p>
+
+<p>This error was solved by passing a <code class="highlighter-rouge">new ArrayList&lt;&gt;()</code> into the method instead
+of the schedule variable.</p>
+
+<p>Further refactoring is required to improve the code here, but it is great that
+we managed to finally deliver the story.</p>
+
+:ET

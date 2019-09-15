@@ -1,0 +1,151 @@
+I"m3<h2 id="decorator-pattern">Decorator Pattern</h2>
+
+<p>At the end of yesterday’s post I hinted that my DelayedComputer was tied to the
+DumbComputer and that it might be necessary to also delay the PerfectComputer.
+That turned out to be the case almost immediately.</p>
+
+<p>The first solution that came to mind was to create a DelayedPerfectComputer,
+that simply extended the PerfectComputer and overrode the choosePosition
+method. However, that would mean I’d end up with two new classes that both
+extended different classes in exactly the same way. What if I needed to create
+yet another computer player, for example the CheatingComputer. If that also
+need to be delayed I’d end up creating yet another delay class.</p>
+
+<p>How is it possible to have a new class represent two other classes but with
+extra features?</p>
+
+<h4 id="original-delayed-computer">Original Delayed Computer</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DelayedComputer</span> <span class="kd">extends</span> <span class="nc">DumbComputer</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">delay</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">DelayedComputer</span><span class="o">(</span><span class="nc">Mark</span> <span class="n">mark</span><span class="o">,</span> <span class="kt">int</span> <span class="n">delay</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">mark</span><span class="o">);</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">delay</span> <span class="o">=</span> <span class="n">delay</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">choosePosition</span><span class="o">(</span><span class="nc">UserInterface</span> <span class="n">ui</span><span class="o">,</span> <span class="nc">Board</span> <span class="n">board</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">delay</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">interrupt</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kd">super</span><span class="o">.</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">ui</span><span class="o">,</span> <span class="n">board</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>So there are a couple of issues with this, firstly it is coupled specificially
+to the DumbComputer class, but also in order to test this I have to pass
+a delay figure in of 0 so that the test suite isn’t increased in length.</p>
+
+<p>So, the first part of the solution is to convert the DelayedComputer player
+into a decorator and then deal with the issue of delays.</p>
+
+<h4 id="decorator-delayed-computer">Decorator Delayed Computer</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DelayedComputer</span> <span class="kd">implements</span> <span class="nc">Player</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">delay</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">Player</span> <span class="n">player</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">DelayedComputer</span><span class="o">(</span><span class="nc">Player</span> <span class="n">player</span><span class="o">,</span> <span class="kt">int</span> <span class="n">delay</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">player</span> <span class="o">=</span> <span class="n">player</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">delay</span> <span class="o">=</span> <span class="n">delay</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">choosePosition</span><span class="o">(</span><span class="nc">UserInterface</span> <span class="n">ui</span><span class="o">,</span> <span class="nc">Board</span> <span class="n">board</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">delay</span><span class="o">);</span>
+            <span class="n">ui</span><span class="o">.</span><span class="na">displayComputerThinking</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">interrupt</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">player</span><span class="o">.</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">ui</span><span class="o">,</span> <span class="n">board</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getMark</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">player</span><span class="o">.</span><span class="na">getMark</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>So now, anytype of Player including Human, can have a delay added to their
+choosePosition method. This is a much better implementation since it allows the
+delay to be added to both classes, without modifying those classes.</p>
+
+<p>Finally, I needed to deal with the actual delay issue. This was solved through
+some Dependency Inversion.</p>
+
+<h4 id="decorator-delayed-computer-1">Decorator Delayed Computer</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DelayedComputer</span> <span class="kd">implements</span> <span class="nc">Player</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">delay</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">Delayer</span> <span class="n">delayer</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">Player</span> <span class="n">player</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">DelayedComputer</span><span class="o">(</span><span class="nc">Player</span> <span class="n">player</span><span class="o">,</span> <span class="nc">Delayer</span> <span class="n">delayer</span><span class="o">,</span> <span class="kt">int</span> <span class="n">delay</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">player</span> <span class="o">=</span> <span class="n">player</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">delayer</span> <span class="o">=</span> <span class="n">delayer</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">delay</span> <span class="o">=</span> <span class="n">delay</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">choosePosition</span><span class="o">(</span><span class="nc">UserInterface</span> <span class="n">ui</span><span class="o">,</span> <span class="nc">Board</span> <span class="n">board</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">delayer</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">delay</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">player</span><span class="o">.</span><span class="na">choosePosition</span><span class="o">(</span><span class="n">ui</span><span class="o">,</span> <span class="n">board</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getMark</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">player</span><span class="o">.</span><span class="na">getMark</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h4 id="delayer-interface">Delayer Interface</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Delayer</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">sleep</span><span class="o">(</span><span class="kt">int</span> <span class="n">delay</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h4 id="threaddelayer">ThreadDelayer</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ThreadDelayer</span> <span class="kd">implements</span> <span class="nc">Delayer</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">sleep</span><span class="o">(</span><span class="kt">int</span> <span class="n">delay</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="nc">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="n">delay</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h4 id="mockdelayer">MockDelayer</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MockDelayer</span> <span class="kd">implements</span> <span class="nc">Delayer</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="n">hasSleepBeenCalled</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">MockDelayer</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">hasSleepBeenCalled</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">sleep</span><span class="o">(</span><span class="kt">int</span> <span class="n">delay</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">hasSleepBeenCalled</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>A nicely decoupled solution with some flexibility for later. Should it be
+required, I is not too much work to create an abstract PlayerDecorator class
+that would allow other additions to their behaviour as appropriate. For now
+though, the delay is sufficient.</p>
+:ET

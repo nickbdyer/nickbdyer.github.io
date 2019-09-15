@@ -1,0 +1,51 @@
+I"s<p>Documentation.</p>
+
+<p>This morning was spent assessing my Java TTT through the process of building
+an UML diagram. As it stands this is not the final version, since I neglected
+to add methods to each of the listed classes. Even without that though, you can
+see at a glance how messy the diagram looks, which is a strong sign that my
+classes are a bit too dependent on each other.</p>
+
+<p><img src="/images/uml_diagram.jpg" alt="UML Diagram" title="UML Diagram" class="center-image" /></p>
+
+<p>I will continue to work on this diagram a little bit tomorrow and post the
+updated version. It is a representation of my project as it currently stands,
+it will be interesting to see how this diagram changes by the end of the
+project.</p>
+
+<p>The afternoon was spent dealing with a story for streamlining the usage of my
+TTT on other peoples laptops. I had hoped it would be a simple process, and to
+be fair it only took half a day, but in hindsight I think an hour might have
+been more appropriate if only the documentation had been better.</p>
+
+<p>It’s difficult to judge documentation sometimes, because everyone approaches it
+with a different aim in mind. So for my usage it wasn’t good enough, but
+perhaps for someone else it would be. That said, it was surprising to me that
+some of the basics were difficult to find, the Gradle Application plugin for
+example, is meant to allow you to “run” your program through just two lines in
+your build file:</p>
+
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'application'</span>
+
+<span class="n">mainClassName</span> <span class="o">=</span> <span class="s2">"com.company.Main"</span>
+</code></pre></div></div>
+
+<p>Nowhere in the documentation could I find notice that the standard in and out
+are overwritten when doing so. So, the program would run perfectly if executed
+through IntelliJ and through the compiled jar file, but would raise exceptions
+when using <code class="highlighter-rouge">gradle run</code>. After sometime spent trying to determine what the
+issue actually was, I found an answer on Stackoverflow.</p>
+
+<p>Add this to your <code class="highlighter-rouge">build.gradle</code></p>
+
+<div class="language-groovy highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">run</span> <span class="o">{</span>
+    <span class="n">standardInput</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">in</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>I’ve never had to write much documentation outside of accompanying an API,
+however, I can see how for something as big as gradle it could be a daunting
+process. Perhaps the solution lies in monitoring stackoverflow for questions
+and determining where the holes are in your documentation.</p>
+
+:ET

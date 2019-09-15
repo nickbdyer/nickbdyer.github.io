@@ -1,0 +1,272 @@
+I":V<h2 id="temporal-coupling">Temporal Coupling</h2>
+
+<h3 id="situation">Situation</h3>
+
+<p>This is what I’m looking at.</p>
+
+<h5 id="board-class"><strong>Board Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasWinner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">Lines</span><span class="o">(</span><span class="n">cells</span><span class="o">).</span><span class="na">hasAWinner</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">Lines</span><span class="o">(</span><span class="n">cells</span><span class="o">).</span><span class="na">getWinningMark</span><span class="o">();</span> <span class="c1">// Temporal coupling.</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h5 id="lines-class"><strong>Lines Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="nc">Mark</span> <span class="n">winningMark</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">winningMark</span><span class="o">;</span> <span class="c1">// Temporal coupling.</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasAWinner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="n">line</span> <span class="o">:</span> <span class="n">possibleCombinations</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasAllMatchingElements</span><span class="o">(</span><span class="n">line</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">winningMark</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span> <span class="c1">// Assignment occurs here.</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="complication">Complication</h3>
+
+<p>As noted by the inline comment, this code suffers from temporal coupling.
+During gameplay this issue does not occur, since the gameplay loop prevents
+getWinningMark() from being called before the game has a winner. However, in
+testing this method, the test fails unless hasWinner() is called in the test
+first.</p>
+
+<h3 id="question">Question</h3>
+
+<p>How can the code be altered here in order to remove the temporal coupling and
+make improve the flexibility overall?</p>
+
+<h3 id="answer-one">Answer One</h3>
+
+<p>Modify the Lines class to call checkLinesForAllMatchingElements(). This keeps
+the temporal coupling, but means the tests pass and the functionality is there.
+For the sake of running one loop again, it is not particularly problematic, but
+it feels wrong.</p>
+
+<h5 id="lines-class-1"><strong>Lines Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="nc">Mark</span> <span class="n">winningMark</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">checkLinesForAllMatchingElements</span><span class="o">();</span>
+    <span class="k">return</span> <span class="n">winningMark</span><span class="o">;</span> <span class="c1">// Temporal coupling.</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasAWinner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="n">line</span> <span class="o">:</span> <span class="n">possibleCombinations</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasAllMatchingElements</span><span class="o">(</span><span class="n">line</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">winningMark</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="answer-two">Answer Two</h3>
+
+<p>By initialising <code class="highlighter-rouge">winningMark</code> as <code class="highlighter-rouge">null</code>, we can do a check for null here and
+avoid a null pointer exception. In fact winningMark will be null if it is not
+initialised, but at least in specifying it that is no longer a surprise.    This
+is sort of OK, but null is pretty grimey, so I’d like to avoid it. This
+solution doesn’t give much information to anyone using the class why the null
+check exists.</p>
+
+<h5 id="lines-class-2"><strong>Lines Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="nc">Mark</span> <span class="n">winningMark</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">winningMark</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="no">EMPTY</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">winningMark</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasAWinner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="n">line</span> <span class="o">:</span> <span class="n">possibleCombinations</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasAllMatchingElements</span><span class="o">(</span><span class="n">line</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">winningMark</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="answer-three">Answer Three</h3>
+
+<p>By throwing a unchecked exception, the public API for the Board class is
+descriptive.    However, it is on a par with Answer Two for laziness. It
+would probably better to avoid the exception in the first place.</p>
+
+<h5 id="prematureexception-class"><strong>PrematureException Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PrematureException</span> <span class="kd">extends</span> <span class="nc">RuntimeException</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="nf">PrematureException</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="s">"You have called this method before there is a winner."</span><span class="o">);</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<h5 id="lines-class-3"><strong>Lines Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="nc">Mark</span> <span class="n">winningMark</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">winningMark</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">PrematureException</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">winningMark</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasAWinner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="n">line</span> <span class="o">:</span> <span class="n">possibleCombinations</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasAllMatchingElements</span><span class="o">(</span><span class="n">line</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">winningMark</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="answer-four">Answer Four</h3>
+
+<p>Java Optionals allow a value to be unspecified without having to deal with
+checks for null. From my point of view this only marginally better than a null
+check, the logic is the same but the syntax is improved.</p>
+
+<p>N.B. Following a conversation with some craftspeople this implementation has
+been revised in Answer Seven.</p>
+
+<h5 id="lines-class-4"><strong>Lines Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="n">winningMark</span> <span class="o">=</span> <span class="nc">Optional</span><span class="o">.</span><span class="na">empty</span><span class="o">();</span>
+
+
+<span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">winningMark</span><span class="o">.</span><span class="na">orElse</span><span class="o">(</span><span class="no">EMPTY</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasAWinner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">checkLinesForAllMatchingElements</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="n">line</span> <span class="o">:</span> <span class="n">possibleCombinations</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasAllMatchingElements</span><span class="o">(</span><span class="n">line</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">winningMark</span> <span class="o">=</span> <span class="nc">Optional</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">line</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">));</span>
+                <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+            <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="answer-five">Answer Five</h3>
+
+<p>In order to avoid the situation entirely, a better solution might be for the
+game to keep track of each mark that is played. So that if at any point the
+game ends in a “Win” condition, then it can query for the last mark used since
+that will always be the winner.</p>
+
+<h3 id="answer-six">Answer Six</h3>
+
+<p>This is much better solution since it maintains the code as it is, no breaking
+changes to the implementation like Answer Five. It also removes the temporal
+coupling. It does leave a null check to propogate to other classes that
+implement it, but it is on the whole a much more elegant solution.</p>
+
+<h5 id="lines-class-5"><strong>Lines Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="n">line</span> <span class="o">:</span> <span class="n">possibleCombinations</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasAllMatchingElements</span><span class="o">(</span><span class="n">line</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="n">line</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasAWinner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<h3 id="answer-seven">Answer Seven</h3>
+
+<p>This new version of the optionals implementation is the one I will keep. It is
+functionally very similar to Answer Six, equally as elegant, but also provides
+the option to move the decision logic up to another class. So the Game class
+that actually acts on <code class="highlighter-rouge">board.hasAWinner</code> and <code class="highlighter-rouge">board.getWinningMark</code> could be
+passed the optionals instead, and then use the pre-built methods to make
+decisions from there.</p>
+
+<h5 id="lines-class-6"><strong>Lines Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="nf">winner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="n">line</span> <span class="o">:</span> <span class="n">possibleCombinations</span><span class="o">())</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">hasAllMatchingElements</span><span class="o">(</span><span class="n">line</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="nc">Optional</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">line</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="nc">Optional</span><span class="o">.</span><span class="na">empty</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="c1">// Or streaming method!!</span>
+
+<span class="kd">public</span> <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Mark</span><span class="o">&gt;</span> <span class="nf">winner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="nf">possibleCombinations</span><span class="o">().</span><span class="na">stream</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">line</span> <span class="o">-&gt;</span> <span class="n">hasAllMatchingElements</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>
+            <span class="o">.</span><span class="na">findFirst</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">line</span> <span class="o">-&gt;</span> <span class="n">line</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">));</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<h5 id="board-class-1"><strong>Board Class</strong></h5>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasWinner</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">Lines</span><span class="o">(</span><span class="n">cells</span><span class="o">).</span><span class="na">winner</span><span class="o">().</span><span class="na">isPresent</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="nc">Mark</span> <span class="nf">getWinningMark</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">Lines</span><span class="o">(</span><span class="n">cells</span><span class="o">).</span><span class="na">winner</span><span class="o">().</span><span class="na">get</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>I have no idea what tomorrow’s blog post will be about because I’ve spent most
+of it writing this… I think it was worth it though.</p>
+:ET

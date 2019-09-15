@@ -1,0 +1,137 @@
+I"b3<p>Staying Green.</p>
+
+<p>So, I’ve been busily working away on my Java TTT without much trouble, just
+slowly adding <em>test driven</em> features when I’ve started to notice a couple of
+things: One, my board class seems to be getting a bit too big. Coming from my
+Ruby TTT, I am somewhat distracted by the size of the methods that I’m
+producing in Java, so my first thought is:</p>
+
+<blockquote>
+  <p>“Is the Board class getting too big, or is it just that Java is more verbose
+than I’m used to”.</p>
+</blockquote>
+
+<p>On further self inspection, I think the sensation/gut feeling I’m getting is
+one of, “I’m not sure what methods are in the board class, I’m losing track of
+its capabilities”. This sounds like a sign of a class that needs to be broken
+down, but I’m not immediately sure I know where it should be split. By way of
+an interim solution, the thought of making some of the methods simpler and
+shorter (more Ruby-ish) seems like a good idea.</p>
+
+<p>Decision time then, whats the best way to quickly (oh, hindsight!) improve the
+methods in my Board class…<strong>change the underlying data structure</strong>. Yes,
+that’s definitely it, great idea.</p>
+
+<h4 id="step-1">Step 1</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git commit
+</code></pre></div></div>
+
+<h4 id="step-2">Step 2</h4>
+
+<p>Change <code class="highlighter-rouge">this.cells = new char[9][]...</code> to <code class="highlighter-rouge">this.cells = Arrays.asList(...)</code>.</p>
+
+<h4 id="step-3">Step 3</h4>
+
+<p>Run test suite. Panic a little bit. Plow on changing methods until all your
+tests are green.</p>
+
+<h4 id="step-4">Step 4</h4>
+
+<p>Regret decision.</p>
+
+<h4 id="step-5">Step 5</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git reset HEAD~1
+</code></pre></div></div>
+
+<h4 id="step-6">Step 6</h4>
+
+<p>Stay Green!</p>
+
+<p>Change the constructor assignment as before. However, this time use your
+<code class="highlighter-rouge">showCells()</code> method to encapsulate the change and keep the test suite green.</p>
+
+<h4 id="step-7">Step 7</h4>
+
+<p>Continue to change all the methods in your class to utilise the new data
+structure but also modify them to convert their returning value back into the
+old data structure where necessary. So for the entire refactoring process, the
+test suite stays green.</p>
+
+<h4 id="step-8">Step 8</h4>
+
+<p>Flick the switch. This point is where it will get a little hairy, and I’m not
+quite at this step yet. However, it is very clear that most of the leg work is
+now done, so it will be much simpler than the alternative and because the
+changes have been small and incremental, we haven’t broken the software in
+doing so.</p>
+
+<h3 id="examples">Examples</h3>
+
+<h4 id="constructor">constructor</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nf">Board</span><span class="o">()</span> <span class="o">{</span>
+  <span class="k">this</span><span class="o">.</span><span class="na">cells</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[]{</span><span class="sc">'1'</span><span class="o">,</span> <span class="sc">'2'</span><span class="o">,</span> <span class="sc">'3'</span><span class="o">,</span> <span class="sc">'4'</span><span class="o">,</span> <span class="sc">'5'</span><span class="o">,</span> <span class="sc">'6'</span><span class="o">,</span> <span class="sc">'7'</span><span class="o">,</span> <span class="sc">'8'</span><span class="o">,</span>
+    <span class="sc">'9'</span><span class="o">};</span>
+  <span class="k">this</span><span class="o">.</span><span class="na">size</span> <span class="o">=</span> <span class="n">cells</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nf">Board</span><span class="o">()</span> <span class="o">{</span>
+  <span class="k">this</span><span class="o">.</span><span class="na">cells</span> <span class="o">=</span> <span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="sc">'1'</span><span class="o">,</span> <span class="sc">'2'</span><span class="o">,</span> <span class="sc">'3'</span><span class="o">,</span> <span class="sc">'4'</span><span class="o">,</span> <span class="sc">'5'</span><span class="o">,</span> <span class="sc">'6'</span><span class="o">,</span> <span class="sc">'7'</span><span class="o">,</span> <span class="sc">'8'</span><span class="o">,</span>
+      <span class="sc">'9'</span><span class="o">);</span>
+  <span class="k">this</span><span class="o">.</span><span class="na">size</span> <span class="o">=</span> <span class="n">cells</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h4 id="showcells">showCells()</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">char</span><span class="o">[]</span> <span class="nf">showCells</span><span class="o">()</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="n">cells</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">char</span><span class="o">[]</span> <span class="nf">showCells</span><span class="o">()</span> <span class="o">{</span>
+  <span class="kt">char</span><span class="o">[]</span> <span class="n">results</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">9</span><span class="o">];</span>
+  <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">9</span><span class="o">;</span><span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="kt">char</span> <span class="n">cell</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">cells</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+    <span class="n">results</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">cell</span><span class="o">;</span>
+  <span class="o">}</span>
+  <span class="k">return</span> <span class="n">results</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h4 id="rows">rows()</h4>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">char</span><span class="o">[][]</span> <span class="nf">rows</span><span class="o">()</span> <span class="o">{</span>
+  <span class="kt">char</span><span class="o">[]</span> <span class="n">row1</span> <span class="o">=</span> <span class="nc">Arrays</span><span class="o">.</span><span class="na">copyOfRange</span><span class="o">(</span><span class="n">cells</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
+  <span class="kt">char</span><span class="o">[]</span> <span class="n">row2</span> <span class="o">=</span> <span class="nc">Arrays</span><span class="o">.</span><span class="na">copyOfRange</span><span class="o">(</span><span class="n">cells</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">6</span><span class="o">);</span>
+  <span class="kt">char</span><span class="o">[]</span> <span class="n">row3</span> <span class="o">=</span> <span class="nc">Arrays</span><span class="o">.</span><span class="na">copyOfRange</span><span class="o">(</span><span class="n">cells</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">9</span><span class="o">);</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[][]{</span><span class="n">row1</span><span class="o">,</span> <span class="n">row2</span><span class="o">,</span> <span class="n">row3</span><span class="o">};</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">char</span><span class="o">[][]</span> <span class="nf">rows</span><span class="o">()</span> <span class="o">{</span>
+  <span class="kt">char</span><span class="o">[]</span> <span class="n">row1char</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">3</span><span class="o">];</span>
+  <span class="kt">char</span><span class="o">[]</span> <span class="n">row2char</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">3</span><span class="o">];</span>
+  <span class="kt">char</span><span class="o">[]</span> <span class="n">row3char</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[</span><span class="mi">3</span><span class="o">];</span>
+  <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Character</span><span class="o">&gt;</span> <span class="n">row1</span> <span class="o">=</span> <span class="n">cells</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">3</span><span class="o">);</span>
+  <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Character</span><span class="o">&gt;</span> <span class="n">row2</span> <span class="o">=</span> <span class="n">cells</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">6</span><span class="o">);</span>
+  <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Character</span><span class="o">&gt;</span> <span class="n">row3</span> <span class="o">=</span> <span class="n">cells</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="mi">6</span><span class="o">,</span> <span class="mi">9</span><span class="o">);</span>
+  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">;</span><span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+    <span class="kt">char</span> <span class="n">cell1</span> <span class="o">=</span> <span class="n">row1</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+    <span class="kt">char</span> <span class="n">cell2</span> <span class="o">=</span> <span class="n">row2</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+    <span class="kt">char</span> <span class="n">cell3</span> <span class="o">=</span> <span class="n">row3</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+    <span class="n">row1char</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">cell1</span><span class="o">;</span>
+    <span class="n">row2char</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">cell2</span><span class="o">;</span>
+    <span class="n">row3char</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">cell3</span><span class="o">;</span>
+  <span class="o">}</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[][]{</span><span class="n">row1char</span><span class="o">,</span> <span class="n">row2char</span><span class="o">,</span> <span class="n">row3char</span><span class="o">};</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>These changes were made in order to try and simplify the board class, and
+whilst they have achieved that, it still feels a bit unwieldy. So there is
+further work to be done.</p>
+:ET

@@ -1,0 +1,10 @@
+I"�<p>When can we consider the code we write “good enough”? For some, a passing build
+is good enough. For others perhaps it’s a passing <a href="https://en.wikipedia.org/wiki/Acceptance_testing">acceptance
+suite</a>. Maybe it’s the
+existence of unit tests that define completion, with a specific code coverage
+percentage. These options are all quantifiable, which makes them simple targets
+to aspire to. We can go further than that and push for something less tangible
+but more worthwhile.  All apprentices at 8th Light undertake a project called
+the HTTP Server. It’s no small undertaking, and consequently brings up numerous
+occasions to question whether the code you have written is “good enough”.</p>
+:ET

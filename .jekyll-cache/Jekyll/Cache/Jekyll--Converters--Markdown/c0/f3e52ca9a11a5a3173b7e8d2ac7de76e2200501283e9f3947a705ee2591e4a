@@ -1,0 +1,47 @@
+I"�<p>Overwriting Equals.</p>
+
+<p>After yesterday’s success in testing the PlayerFactory I was ready to start
+moving on to complete the rest of my iteration.</p>
+
+<p>However, early this morning I discovered that overwriting equals is actually
+a code smell and should be avoided whereever possible.</p>
+
+<p>How then can we test the creation of two new instances of players. The answer
+is another code smell unfortunately, but in this case allowable. <code class="highlighter-rouge">instanceof</code>.</p>
+
+<p>The tests for PlayerFactory now look like this, and the overwriting of equals
+and hashcode have been removed.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">canCreateTwoHumanPlayers</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">PlayerFactory</span> <span class="n">pfactory</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">PlayerFactory</span><span class="o">();</span>
+    <span class="n">assertTrue</span><span class="o">(</span><span class="n">pfactory</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="mi">1</span><span class="o">).</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span> <span class="k">instanceof</span> <span class="nc">Human</span><span class="o">);</span>
+    <span class="n">assertTrue</span><span class="o">(</span><span class="n">pfactory</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="mi">1</span><span class="o">).</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span> <span class="k">instanceof</span> <span class="nc">Human</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">canCreateAHumanAndComputerPlayer</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">PlayerFactory</span> <span class="n">pfactory</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">PlayerFactory</span><span class="o">();</span>
+    <span class="n">assertTrue</span><span class="o">(</span><span class="n">pfactory</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="mi">2</span><span class="o">).</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span> <span class="k">instanceof</span> <span class="nc">Human</span><span class="o">);</span>
+    <span class="n">assertTrue</span><span class="o">(</span><span class="n">pfactory</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="mi">2</span><span class="o">).</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span> <span class="k">instanceof</span> <span class="nc">DumbComputer</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Mateu also pointed out another code smell to me today, one that I hadn’t
+realised. I’m writing here in the hope that I’ll remember it!</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nf">Game</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Player</span><span class="o">&gt;</span> <span class="n">players</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">players</span> <span class="o">=</span> <span class="n">players</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">currentPlayer</span> <span class="o">=</span> <span class="n">players</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="c1">//   this.player1 = currentPlayer = players.get(0);</span>
+    <span class="c1">//   this.player2 = players.get(1);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Assigining <code class="highlighter-rouge">player1</code> to <code class="highlighter-rouge">players.get(0)</code> implied that there was a restriction
+and assumption of knowledge in the game.  Mateu and hence this was a code
+smell, almost like repetition. The commented out code will be removed in favour
+of the more robust <code class="highlighter-rouge">this.players = players</code>. This allows for the possibility of
+more than two players in the game of tictactoe.</p>
+
+:ET

@@ -1,0 +1,27 @@
+I"�<p>Writing Good Tests.</p>
+
+<p>This afternoon I paired with Mateu on my Java TTT. We deleted a lot of code,
+and reverted back to the step <em>before</em> implementing rules for win and draw.
+I wanted to try and get a grasp of the thought process behind designing with
+tests and truly doing the simplest thing possible.</p>
+
+<p>The first thing I noticed, was that it took us almost half an hour to write the
+first test, and it wasn’t the test I was expecting. I had approached this part
+of the project with my prior knowledge of the domain at the forefront of my
+mind. I knew that in order to determine if there is a winner on the board,
+somehow I need to check each row, column and diagonal for 3 matching symbols.
+With that in mind, I started with rows, and designed a test for the creation of
+a method that would return the “rows” in a given board.</p>
+
+<p>When working with Mateu, he took a big step back. “What is the feature that the
+client is expecting you to deliver?”. Having explained what it was, it was
+immediately obvious that a test of that name would not have been suitable (it
+was something about rules and knowing if there was a winner/draw). So instead,
+we looked a simpler question, “What if the first row was all X’s”. This test
+made sense to me, it breaks the problem down, and faciliates writing the
+simplest thing that could possibly work. I’m keen to finish off working through
+this problem and see what solution it leads me to. My hope is that it will lead
+me to a simpler way to create projects, because ultimately I won’t know the
+domain in advance and I’ll need to be able to make incremental steps in the
+project design.</p>
+:ET

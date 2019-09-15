@@ -1,0 +1,146 @@
+I";<h1 id="sessions-and-broken-tests">Sessions And Broken Tests</h1>
+
+<p>Before starting work on the new internal project for lunch orders, I had
+a shortened iteration to try and pull my TTT to a close. I didn’t quite get it
+to the stage I wanted, but I did manage to complete one story I was aiming for,
+which was “Allow multiple people to play different games at one time”.</p>
+
+<p>My interpretation of this story lead me to introduce sessions to my web
+application. Play has some nice helper methods for adding things to the session
+and reading them back, namely:</p>
+
+<p>Write to session:</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">session</span><span class="o">(</span><span class="s">"game_id"</span><span class="o">,</span> <span class="n">board</span><span class="o">.</span><span class="na">hashCode</span><span class="o">().</span><span class="na">toString</span><span class="o">());</span>
+</code></pre></div></div>
+
+<p>Read from session:</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">session</span><span class="o">(</span><span class="s">"game_id"</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>I had some trouble getting sessions to behave, due to an issue I have mentioned
+previously about some state in my controller. In my elation at finally getting
+this to work, I neglected to re-run my HomeControllerTest suite. Over the
+weekend just gone, I had to buy a version of IntelliJ and in doing so wanted to
+get it setup with my previous projects. On importing my TTT, I made the
+discovered that none of my tests were working.</p>
+
+<p>My initial assumption (initial, as in 2 hours) was that IntelliJ Ultimate
+hadn’t imported the project correctly. Especially since it gives you
+5 different ways to import the project (SBT, Activator, Scala, Java - Play,
+Scala - Play). Having dug around for far to long, I realised that it was in
+fact the introduction of sessions that had broken the test suite, and not the
+new version of IntelliJ.</p>
+
+<p>By way of example, here is a test from my HomeContoller suite:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">testGameChoiceHvH</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">Map</span> <span class="n">form</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;();</span>
+    <span class="n">form</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"gameType"</span><span class="o">,</span> <span class="s">"0"</span><span class="o">);</span>
+    <span class="nc">HomeController</span> <span class="n">homeController</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HomeController</span><span class="o">();</span>
+
+    <span class="nc">Result</span> <span class="n">result</span> <span class="o">=</span> <span class="n">invokeWithContext</span><span class="o">(</span><span class="nc">Helpers</span><span class="o">.</span><span class="na">fakeRequest</span><span class="o">().</span><span class="na">bodyForm</span><span class="o">(</span><span class="n">form</span><span class="o">),</span>
+                <span class="o">()</span> <span class="o">-&gt;</span> <span class="n">homeController</span><span class="o">.</span><span class="na">chooseGame</span><span class="o">());</span>
+
+    <span class="nc">String</span> <span class="n">gameId</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">session</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="s">"game_id"</span><span class="o">);</span>
+    <span class="n">assertTrue</span><span class="o">(</span><span class="n">homeController</span><span class="o">.</span><span class="na">getGame</span><span class="o">(</span><span class="n">gameId</span><span class="o">).</span><span class="na">getCurrentPlayer</span><span class="o">()</span> <span class="k">instanceof</span> <span class="nc">Human</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The problem I was having, was that the final assertion was failing with
+a Runtime Exception.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.RuntimeException: There is no HTTP Context available from here.
+</code></pre></div></div>
+
+<p>To give some “context” to the failure here, the method getGame uses the value
+corresponding to <code class="highlighter-rouge">"game_id"</code> from the session to retrieve a game instance from
+a HashMap on the controller instance. The failure here is notification that,
+without HTTP Context, there is not session to retrieve a value from. And hence,
+the game instance cannot be retrieved this way.</p>
+
+<p>I was eager to fix this problem, since I felt it should be feasible to complete
+it given requirements of testing authentication in the future. I could of
+course, find another way to store and retrieve the game instance, using the URL
+perhaps, but I was on a mission! There are a number of other methods that
+implement use of the reverse routing facility built into Play. I hoped that one
+of them might expose the session, in order to complete the test. One that
+I tried with some success was:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">testGameChoiceHvH</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">Map</span> <span class="n">form</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;();</span>
+    <span class="n">form</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"gameType"</span><span class="o">,</span> <span class="s">"0"</span><span class="o">);</span>
+    <span class="nc">HomeController</span> <span class="n">homeController</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HomeController</span><span class="o">();</span>
+
+    <span class="nc">Result</span> <span class="n">result</span> <span class="o">=</span> <span class="n">route</span><span class="o">(</span><span class="n">fakeRequest</span><span class="o">(</span><span class="n">routes</span><span class="o">.</span><span class="na">HomeController</span><span class="o">.</span><span class="na">chooseGame</span><span class="o">()).</span><span class="na">bodyForm</span><span class="o">(</span><span class="n">form</span><span class="o">));</span>
+
+    <span class="nc">String</span> <span class="n">gameId</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">session</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="s">"game_id"</span><span class="o">);</span>
+    <span class="n">assertTrue</span><span class="o">(</span><span class="n">homeController</span><span class="o">.</span><span class="na">getGame</span><span class="o">(</span><span class="n">gameId</span><span class="o">).</span><span class="na">getCurrentPlayer</span><span class="o">()</span> <span class="k">instanceof</span> <span class="nc">Human</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>However, the issue here is that the final assertion is looking for a game on
+the HomeController, but since the method was called via the reverse router, the
+HomeController is not actually used for the fakeRequest. So no game exists, in
+the HashMap on the controller.</p>
+
+<p>I have already told the story of how long I spent trying to solve this problem
+over the weekend, with untold hours looking into Guice, and various other
+potential sources of solution. StackOverflow didn’t even have the answer for
+me.</p>
+
+<p>Finally, by chance one of my google searches brought up a link to the github
+repo for the Play Framework. And I gave some thought to the idea of checking
+the source code for a solution. Low and behold, it was right there, in plain
+sight!</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**
+ * Calls a Callable which invokes a Controller or some other method with a Context
+ */</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="o">&lt;</span><span class="no">V</span><span class="o">&gt;</span> <span class="no">V</span> <span class="nf">invokeWithContext</span><span class="o">(</span><span class="nc">RequestBuilder</span> <span class="n">requestBuilder</span><span class="o">,</span> <span class="nc">Callable</span><span class="o">&lt;</span><span class="no">V</span><span class="o">&gt;</span> <span class="n">callable</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">try</span> <span class="o">{</span>
+    <span class="nc">Context</span><span class="o">.</span><span class="na">current</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="k">new</span> <span class="nc">Context</span><span class="o">(</span><span class="n">requestBuilder</span><span class="o">));</span>
+    <span class="k">return</span> <span class="n">callable</span><span class="o">.</span><span class="na">call</span><span class="o">();</span>
+  <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+  <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+    <span class="nc">Context</span><span class="o">.</span><span class="na">current</span><span class="o">.</span><span class="na">remove</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>I had already tried a number of ways of creating a context in the <code class="highlighter-rouge">@Before</code>
+method of junit. None of which had worked, but it was now clear to see exactly
+how it could be implemented, and why the <code class="highlighter-rouge">invokeWithcontext</code> method didn’t
+expose the session afterwards. The immediate solution then was:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">testGameChoiceHvH</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">Map</span> <span class="n">form</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;();</span>
+    <span class="n">form</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"gameType"</span><span class="o">,</span> <span class="s">"0"</span><span class="o">);</span>
+    <span class="nc">HomeController</span> <span class="n">homeController</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HomeController</span><span class="o">();</span>
+
+    <span class="nc">Http</span><span class="o">.</span><span class="na">RequestBuilder</span> <span class="n">request</span> <span class="o">=</span> <span class="n">fakeRequest</span><span class="o">(</span><span class="n">routes</span><span class="o">.</span><span class="na">HomeController</span><span class="o">.</span><span class="na">chooseGame</span><span class="o">()).</span><span class="na">bodyForm</span><span class="o">(</span><span class="n">form</span><span class="o">);</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="nc">Http</span><span class="o">.</span><span class="na">Context</span><span class="o">.</span><span class="na">current</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="k">new</span> <span class="nc">Http</span><span class="o">.</span><span class="na">Context</span><span class="o">(</span><span class="n">request</span><span class="o">));</span>
+        <span class="n">homeController</span><span class="o">.</span><span class="na">chooseGame</span><span class="o">();</span>
+
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+
+        <span class="n">assertFalse</span><span class="o">(</span><span class="nc">Http</span><span class="o">.</span><span class="na">Context</span><span class="o">.</span><span class="na">current</span><span class="o">().</span><span class="na">session</span><span class="o">().</span><span class="na">isEmpty</span><span class="o">());</span>
+        <span class="nc">String</span> <span class="n">gameId</span> <span class="o">=</span> <span class="nc">Http</span><span class="o">.</span><span class="na">Context</span><span class="o">.</span><span class="na">current</span><span class="o">().</span><span class="na">session</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="s">"game_id"</span><span class="o">);</span>
+
+        <span class="n">assertTrue</span><span class="o">(</span><span class="n">homeController</span><span class="o">.</span><span class="na">getGame</span><span class="o">(</span><span class="n">gameId</span><span class="o">).</span><span class="na">getCurrentPlayer</span><span class="o">()</span> <span class="k">instanceof</span> <span class="nc">DelayedComputer</span><span class="o">);</span>
+
+        <span class="nc">Http</span><span class="o">.</span><span class="na">Context</span><span class="o">.</span><span class="na">current</span><span class="o">.</span><span class="na">remove</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Now, I am very aware that this test is not clear, I have not yet had a chance
+to refactor it, but it works! So finally I can get back to green on my test
+suite and I have a method for test authentication in the future!</p>
+:ET

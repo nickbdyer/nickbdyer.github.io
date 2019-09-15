@@ -1,0 +1,33 @@
+I"-<p>Testing Behaviour vs Testing Implementation.</p>
+
+<p>Following on from yesterday’s post, the refactoring of the board class
+continued after I flicked the switch over to the new data structure. In doing
+so, I was struggling to get 4 tests to work. Each of the tests were similar, in
+that they respectively tested that the board class could produce a 2D ArrayList
+of rows, columns, diagonals and a combination of all of them. The issue with my
+tests, was that I was testing the implementation of my data structure and
+I wasn’t sure how to declare a 2D ArrayList as the expected result in my tests.</p>
+
+<p>In seeking help from a more seasoned Java colleague, the question of how to
+solve the declaration issue was answered with, “Why are you even testing
+that?”. He was right in some sense, I was tying my tests into the
+implementation and as expected when the implementation changed all my tests
+needed to change alongside it. All four methods existed in order that the board
+class could iterate through the possible combinations to determine if a there
+was a winner. As such, the behaviour that prompts all those methods is just that
+<code class="highlighter-rouge">knowsIfItHasAWinner()</code>. That said, it seemed entirely unreasonable to me that
+100+ lines of production code could be supported by a single failing test.</p>
+
+<p>Mateu advised me that testing implementation was permissable in some
+circumstances, and most acceptably when the implementation is “hidden” within
+a protected class. My concerns around the size of the board class and how
+unruly it was getting were justified then, as we created a Lines class that
+handled the implementation of those methods. Extracting those methods out, and
+we were left with a much more concise Board class. We also discovered the less
+than pretty <code class="highlighter-rouge">Arrays.asList(Arrays.asList('1','2','3'), Arrays.asList(...</code> to
+construct the result for the Lines test suite.</p>
+
+<p>So finally back to all green after that substantial change, and now I can move
+on to creating my Computer opponent.</p>
+
+:ET

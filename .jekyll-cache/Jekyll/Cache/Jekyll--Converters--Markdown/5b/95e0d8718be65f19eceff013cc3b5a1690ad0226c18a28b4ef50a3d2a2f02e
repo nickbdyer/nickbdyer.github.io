@@ -1,0 +1,260 @@
+I"�$<h1 id="data-structures-quick-summary">Data Structures Quick Summary</h1>
+
+<p>Over the last 4 weeks I have been working through a Data Structures and
+Algorithms course, that has given me quite extensive exposure to a number of
+different concepts. In an effort to solidify that learning, I wanted to produce
+this “cheat sheet” as a reference to why each type might be used.</p>
+
+<ul>
+  <li>Arrays</li>
+  <li>Single Linked Lists</li>
+  <li>Double Linked Lists</li>
+  <li>Stacks</li>
+  <li>Queues</li>
+  <li>Trees</li>
+  <li>Tree Traversal</li>
+  <li>Dynamic Arrays</li>
+  <li>Priority Queues</li>
+  <li>Binary Trees</li>
+  <li>Heap Sorting</li>
+  <li>Disjoint Sets</li>
+  <li>Hash Tables</li>
+</ul>
+
+<h3 id="arrays">Arrays</h3>
+
+<p>Contiguous area of memory consisting of equal-sized elements <em>indexed</em> by
+contiguous integers.</p>
+
+<p>Pros: Constant time access any element. Constant time to add and remove
+elements at the end of the array.</p>
+
+<p>Cons: Linear time to add, find and remove at any arbitrary location.</p>
+
+<p>Usages: Great for iterating, and sorting data.</p>
+
+<h3 id="singly-linked-lists">Singly Linked Lists</h3>
+
+<p>List where each element node in the list, has a key and a next pointer. Head
+node exists to point to the first element in the list, tail node is optional,
+but can improve efficiency of some operations.</p>
+
+<p>Pros: Constant time for actions at the front of the list, and back of the list
+when a tail is present.</p>
+
+<p>Cons: Linear time for finding,  and addding/erasing in any other location.</p>
+
+<h3 id="doubly-linked-lists">Doubly Linked Lists</h3>
+
+<p>List where each element node in the list, has a key, a next pointer and a prev
+pointer.</p>
+
+<p>Pros: Over Singly linked lists, Doubly Linked Lists are constant time for
+“AddBefore” operations and “PopBack” operations.</p>
+
+<p>Cons: Same as Singly Linked Lists, linear for many other operations, including
+find.</p>
+
+<h4 id="linked-lists-vs-arrays">Linked Lists vs Arrays</h4>
+
+<ul>
+  <li>Arrays are constant time to add and remove elements at the end of the array.</li>
+  <li>Linked Lists are constant time to add and remove elements at the front of the
+array.</li>
+  <li>Linked Lists are constant time to add and remove elements at the end of
+the array, providing they have a tail node, or are Doubly Linked Lists.</li>
+  <li>Arrays are constant time to find arbitrary element.</li>
+  <li>Linked Lists are linear time to find arbitrary element.</li>
+  <li>Arrays are contiguous, Linked Lists need not be.</li>
+  <li>Doubly Linked Lists are constant time to add and remove at any location in a list.</li>
+</ul>
+
+<p>Arrays are good for random access, linked lists for sequential access.
+Arrays use a defined amount of memory and have a capacity, linked lists can
+grow indefinitely.</p>
+
+<h3 id="stacks">Stacks</h3>
+
+<p>Data Structure that operates as Last In First Out queue. Four operations,
+Top(), Pop(), Empty() and Push(). They can be implemented as an array or
+a linked list.</p>
+
+<p>Pros: All operations are constant time.</p>
+
+<p>Cons: Cannot see any data under the top element.</p>
+
+<p>Usage Examples: Balanced Brackets problem, for text editors.</p>
+
+<h3 id="queues">Queues</h3>
+
+<p>Data structure similar to Stacks in terms of operations, but with a key
+difference in that they are First In First Out. Operations include Enqueue(),
+Dequeue() and Empty(). Queues can be implemented as an array, or a linked list
+(must have a tail pointer). Array implementation is bounded based on the array
+capacity, same for stack implementation.</p>
+
+<p>Pros: All operations are constant time.</p>
+
+<p>Cons: Access to data is only to the least recently added element.</p>
+
+<p>Usage Examples: Message Queues, for maintaining order of requests.</p>
+
+<h3 id="trees">Trees</h3>
+
+<p>A tree is either empty, or a node with a key and a list of child trees. Binary
+tree specifically only has a left or right child.</p>
+
+<p>Tree traversal types: Depth First or Breadth First. Multiple types of depth
+first. Often traversal is done recursively in trees, however with large trees
+stack overflow errors can occur.</p>
+
+<p>Pros: Tree traversal operations allow nodes to be visited in particular orders
+as required.</p>
+
+<p>Cons:</p>
+
+<p>Usage: Hierarchical data storage. Equations, ordering of names etc.</p>
+
+<h3 id="dynamic-arrays">Dynamic Arrays</h3>
+
+<p>Problem with static arrays, is that they are static. Once declared the don’t
+change size, and you need to determine that size at compile time. Solution is
+Dynamic Arrays, allow size to be determined at runtime.</p>
+
+<p>Pros: Get, Set and Size operations are constant time. PushBack is often
+constant time.</p>
+
+<p>Cons: PushBack and Remove are linear time. Some space is wasted in storage
+since the array size is often doubled.</p>
+
+<p>Usages: When you need to put of decision of the max size of an array until
+runtime.</p>
+
+<h3 id="priority-queues">Priority Queues</h3>
+
+<p>A priority queue is a generalisation of a queue, where each element in the
+queue is assigned a priority. So the element with the highest priority is
+popped first.</p>
+
+<p>Implementations are possible, but not recommended in arrays and linked lists.
+Variations with unsorted and sorted versions produce the following:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>Insert</th>
+      <th>Extract Max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Unsorted Array/Linked List</td>
+      <td>O(1)</td>
+      <td>O(n)</td>
+    </tr>
+    <tr>
+      <td>Sorted Array/Linked List</td>
+      <td>O(n)</td>
+      <td>O(n)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><br /></p>
+
+<p>Usage: Processing jobs in order of priority. Heap Sort algorithm uses priority
+queues, as do a number of others.</p>
+
+<h3 id="binary-heaps">Binary Heaps</h3>
+
+<p>One of the most common ways to implement a priority queue.</p>
+
+<p>Binary Max-Heap states that the value of any node must be at least equal if not
+greater than it’s children.</p>
+
+<p>Pros: GetMax, the most useful operation is constant time.</p>
+
+<p>Cons: All other operations are linear time, linear to the tree height. As such,
+we want heaps to be as shallow as possible.</p>
+
+<p>Usages: Priority Queues.</p>
+
+<h3 id="complete-binary-trees">Complete Binary Trees</h3>
+
+<p>Complete Binary Trees are are method to maintain a shallow tree, ideal for
+priority queues as discussed above.</p>
+
+<p>Pros: All operations are O(log n). ExtractMax is constant time. Also, complete
+binary trees can be stored as arrays so they are space efficient. Parent and
+child nodes can be computed real-time. Easy to implement.</p>
+
+<p>Cons: You must keep the tree complete, so operations that change the shape of
+the tree (anything that implements ExtractMax) must be taken care of.</p>
+
+<p>Usages: Priority Queues.</p>
+
+<h3 id="heap-sort">Heap Sort</h3>
+
+<p>You can use a naive implementation, but constantly extracting max into a new
+array, and then that array will essentially be the priority queue, however,
+this is not space efficient and takes O(n log n).</p>
+
+<p>The heap sort algorithm is a asymptotically optimal algorithm for finding the
+maximum or minimum value in an array. Is if efficient not only in speed, but in
+space since it can be carried out in-place on an array.</p>
+
+<p>Pros: Running time of this sorting algorithm is O(log n), as opposed to the
+selection sort algorithm that is O(n).</p>
+
+<p>Cons: A heap must be built around the array first, before it can be operated
+on.</p>
+
+<p>Usages: Combining heap sort with the binary heap allows for a very efficient
+priority queue.</p>
+
+<h3 id="disjoint-sets">Disjoint Sets</h3>
+
+<p>A disjoint-set data structure supports, MakeSet(), Find() and Union(). Can be
+implemented naively as arrays and linked lists, but as expected they are most
+efficient when implemented as trees.</p>
+
+<p>Use the root of a tree as the set ID.</p>
+
+<p>Pros: Practical tree sizes dictate that operations are constant time.</p>
+
+<p>Cons: Heuristics of Union by Rank and Path Compression must be used to achieve
+these operation times.</p>
+
+<p>Usages: Maze solutions.</p>
+
+<p>### Hash Tables</p>
+
+<p>Hash Tables can be implemented in a number of ways.</p>
+
+<p>Direct Addressing utilises an array sized to cover all the possible values of
+a particular item. As such, it can be very memory inefficient. For example
+storing IPv4 address, we need 2^32 indexes in memory.</p>
+
+<p>List-based mapping is more memory efficient, but is considerably slower for
+operations like find and erase, due to sequential access.</p>
+
+<p>Chaining Scheme allows for the two methods above to be combined, with the use
+of a hashing function. The cardinality of a set of objects, is the range into
+which their representation will be reduced to. This is then the size of the
+direct address array.</p>
+
+<p>A hash table is an implementation of a set or a map using hashing. Chaining is
+the most common method of implementing a hash table. C is the length of the
+longest list, m is the cardinality. A chaining hash table is memory efficient
+to O(n + m) and operationally efficient to O(c + 1).</p>
+
+<p>Pros: Memory efficient if chaining is used. Operations are also very very fast,
+for add, find, remove.</p>
+
+<p>Cons: Not good for sorting data, or if you want to iterate over data.</p>
+
+<p>Usages: When fast lookup is required for any element. Also where strong
+relationships in the data are seen.</p>
+
+:ET

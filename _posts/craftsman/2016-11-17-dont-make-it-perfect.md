@@ -1,8 +1,6 @@
 ---
 layout: post
 title: "Don't make it perfect, make it work and refine"
-authors: ["nick-dyer"]
-tags: ["Coding", "Craftsmanship", "Consulting"]
 ---
 Have you ever had trouble starting something? I'm not talking about starting
 a car in winter, but some work, maybe a new project or a blog post. Beginning
@@ -63,7 +61,7 @@ and Mark Zuckerberg are well known for wearing [the same clothes
 everyday](http://www.independent.co.uk/news/people/why-mark-zuckerberg-wears-the-same-clothes-to-work-everyday-a6834161.html).
 When this was queried, Zuckerberg replied:
 
-> "I really want to clear my life to make it so that I have to make as few 
+> "I really want to clear my life to make it so that I have to make as few
 > decisions as possible about anything except how to best serve this
 > community."
 
